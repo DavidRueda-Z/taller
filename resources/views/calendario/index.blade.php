@@ -5,89 +5,14 @@
     <title>Calendario de Eventos</title>
 
     <style>
-        body {
-            background: #f4f4f4;
-            font-family: Arial;
-            padding: 40px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 650px;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        form label {
-            font-weight: bold;
-            margin-top: 10px;
-            display: block;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            margin-top: 5px;
-        }
-
-        textarea {
-            height: 90px;
-        }
-
-        button {
-            background: #e67e22;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            margin-top: 15px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background: #cf6e1f;
-        }
-
-        .evento {
-            background: #fafafa;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            margin-bottom: 10px;
-        }
-
-        .titulo {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .fecha {
-            color: #777;
-            font-size: 0.9rem;
-        }
-
-        a.eliminar {
-            color: red;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        a.eliminar:hover {
-            text-decoration: underline;
-        }
+        body { font-family: Arial; background:#f4f4f4; padding:40px; display:flex; justify-content:center; }
+        .container { width:800px; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.1); }
+        table { width:100%; border-collapse:collapse; margin-top:20px; }
+        th,td { border-bottom:1px solid #ccc; padding:10px; text-align:left; }
+        .btn { padding:6px 10px; border-radius:5px; text-decoration:none; color:white; cursor:pointer; }
+        .editar { background:#f1c40f; }
+        .eliminar { background:#c0392b; }
     </style>
-
 </head>
 <body>
 
@@ -97,40 +22,48 @@
 
     <h1>Calendario de Eventos</h1>
 
-    <form method="POST" action="{{ route('eventos.store') }}">
+    {{-- FORMULARIO --}}
+    <form action="{{ route('eventos.store') }}" method="POST">
         @csrf
 
-        <label>Título</label>
-        <input type="text" name="titulo" required>
-
-        <label>Descripción</label>
-        <textarea name="descripcion" required></textarea>
-
-        <label>Fecha</label>
+        <input type="text" name="titulo" placeholder="Título del evento" required>
         <input type="date" name="fecha" required>
+        <textarea name="descripcion" placeholder="Descripción" required
+        style="width:100%; height:60px; margin-top:8px;"></textarea>
 
-        <button type="submit">Agregar Evento</button>
+        <button style="padding:10px 15px; background:#8e44ad; color:white; border:none; border-radius:6px; margin-top:10px;">
+            Agregar Evento
+        </button>
     </form>
 
-    <hr>
+    {{-- LISTA --}}
+    <table>
+        <tr>
+            <th>Título</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+        </tr>
 
-    @forelse ($eventos as $e)
-        <div class="evento">
-            <div class="titulo">{{ $e->titulo }}</div>
-            <div>{{ $e->descripcion }}</div>
-            <div class="fecha">Fecha: {{ $e->fecha }}</div>
+        @foreach ($eventos as $e)
+        <tr>
+            <td>{{ $e->titulo }}</td>
+            <td>{{ $e->fecha }}</td>
+            <td>{{ $e->descripcion }}</td>
+            <td>
+                <a href="{{ route('eventos.edit', $e->id) }}" class="btn editar">Editar</a>
 
-            <a class="eliminar"
-               href="{{ route('eventos.destroy', $e->id) }}"
-               onclick="return confirm('¿Eliminar este evento?')">
-               Eliminar
-            </a>
-        </div>
-    @empty
-        <p style="text-align:center;">No hay eventos registrados</p>
-    @endforelse
+                <form action="{{ route('eventos.destroy', $e->id) }}" method="POST" style="display:inline;">
+                    @csrf
+                    <button class="btn eliminar" onclick="return confirm('¿Eliminar evento?')">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        @endforeach
+    </table>
 
 </div>
 
 </body>
 </html>
+

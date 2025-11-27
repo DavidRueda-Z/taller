@@ -5,77 +5,13 @@
     <title>Gestor de Gastos</title>
 
     <style>
-        body {
-            background: #f4f4f4;
-            font-family: Arial;
-            padding: 40px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 550px;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        form label {
-            font-weight: bold;
-            margin-top: 10px;
-            display: block;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            margin-top: 5px;
-        }
-
-        button {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            margin-top: 15px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background: #1e8a4c;
-        }
-
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border-bottom: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-
-        a.eliminar {
-            color: red;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        a.eliminar:hover {
-            text-decoration: underline;
-        }
+        body { font-family: Arial; background:#f4f4f4; padding:40px; display:flex; justify-content:center; }
+        .container { width:800px; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.1); }
+        table { width:100%; border-collapse:collapse; margin-top:20px; }
+        th,td { border-bottom:1px solid #ccc; padding:10px; text-align:left; }
+        .btn { padding:5px 10px; border-radius:5px; text-decoration:none; color:white; }
+        .editar { background:#f1c40f; }
+        .eliminar { background:#c0392b; }
     </style>
 </head>
 <body>
@@ -86,27 +22,21 @@
 
     <h1>Gestor de Gastos</h1>
 
-    <form method="POST" action="{{ route('gastos.store') }}">
+    {{-- FORMULARIO --}}
+    <form action="{{ route('gastos.store') }}" method="POST">
         @csrf
 
-        <label>Descripción</label>
-        <input type="text" name="descripcion" required>
+        <input type="text" name="descripcion" placeholder="Descripción" required>
+        <input type="number" step="0.01" name="monto" placeholder="Monto" required>
+        <input type="text" name="categoria" placeholder="Categoría" required>
+        <input type="date" name="fecha" required>
 
-        <label>Monto</label>
-        <input type="number" name="monto" step="0.01" required>
-
-        <label>Categoría</label>
-        <select name="categoria" required>
-            <option value="Comida">Comida</option>
-            <option value="Transporte">Transporte</option>
-            <option value="Servicios">Servicios</option>
-            <option value="Compras">Compras</option>
-            <option value="Otros">Otros</option>
-        </select>
-
-        <button type="submit">Agregar Gasto</button>
+        <button style="padding:10px 15px; background:#8e44ad; color:white; border:none; border-radius:6px;">
+            Agregar
+        </button>
     </form>
 
+    {{-- LISTA --}}
     <table>
         <tr>
             <th>Descripción</th>
@@ -116,24 +46,26 @@
             <th>Acciones</th>
         </tr>
 
-        @forelse ($gastos as $g)
-            <tr>
-                <td>{{ $g->descripcion }}</td>
-                <td>${{ number_format($g->monto, 2) }}</td>
-                <td>{{ $g->categoria }}</td>
-                <td>{{ $g->fecha }}</td>
-                <td>
-                    <a class="eliminar"
-                       href="{{ route('gastos.destroy', $g->id) }}"
-                       onclick="return confirm('¿Eliminar este gasto?')">
-                       Eliminar
-                    </a>
-                </td>
-            </tr>
-        @empty
-            <tr><td colspan="5" style="text-align:center;">No hay gastos</td></tr>
-        @endforelse
+        @foreach ($gastos as $g)
+        <tr>
+            <td>{{ $g->descripcion }}</td>
+            <td>${{ number_format($g->monto, 2) }}</td>
+            <td>{{ $g->categoria }}</td>
+            <td>{{ $g->fecha }}</td>
+            <td>
+                <a href="{{ route('gastos.edit', $g->id) }}" class="btn editar">Editar</a>
+
+                <form action="{{ route('gastos.destroy', $g->id) }}" method="POST" style="display:inline;">
+                    @csrf
+                    <button class="btn eliminar" onclick="return confirm('¿Eliminar gasto?')">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        @endforeach
+
     </table>
+
+    <h3>Total gastado: ${{ number_format($total, 2) }}</h3>
 
 </div>
 

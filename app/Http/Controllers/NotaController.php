@@ -3,24 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class NotaController extends Controller
 {
-    private $archivo = 'notas.json';
-
     private function cargar()
     {
-        if (!Storage::exists($this->archivo)) {
-            Storage::put($this->archivo, json_encode([]));
+        $ruta = storage_path('app/notas.json');
+
+        if (!file_exists($ruta)) {
+            file_put_contents($ruta, json_encode([]));
         }
 
-        return json_decode(Storage::get($this->archivo));
+        return json_decode(file_get_contents($ruta));
     }
 
-    private function guardar($lista)
+    private function guardar($notas)
     {
-        Storage::put($this->archivo, json_encode($lista, JSON_PRETTY_PRINT));
+        $ruta = storage_path('app/notas.json');
+        file_put_contents($ruta, json_encode($notas, JSON_PRETTY_PRINT));
     }
 
     public function index()
@@ -34,7 +34,6 @@ class NotaController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'contenido' => 'required|string',
-            'categoria' => 'required|string'
         ]);
 
         $notas = $this->cargar();
@@ -43,8 +42,6 @@ class NotaController extends Controller
             'id' => time(),
             'titulo' => $request->titulo,
             'contenido' => $request->contenido,
-            'categoria' => $request->categoria,
-            'fecha' => date('Y-m-d')
         ];
 
         $this->guardar($notas);
@@ -56,9 +53,41 @@ class NotaController extends Controller
     {
         $notas = $this->cargar();
 
-        $notas = array_filter($notas, function ($n) use ($id) {
-            return $n->id != $id;
-        });
+        $notas = array_filter($notas, fn($n) => $n->id != $id);
+        $notas = array_values($notas);
+
+        $this->guardar($notas);
+
+        return redirect()->route('notas.index');
+    }
+
+    public function edit($id)
+    {
+        $notas = $this->cargar();
+        $nota = collect($notas)->firstWhere('id', $id);
+
+        if (!$nota) {
+            abort(404, "Nota no encontrada");
+        }
+
+        return view('notas.edit', compact('nota'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'titulo' => 'required|string|max:255',
+            'contenido' => 'required|string',
+        ]);
+
+        $notas = $this->cargar();
+
+        foreach ($notas as $n) {
+            if ($n->id == $id) {
+                $n->titulo = $request->titulo;
+                $n->contenido = $request->contenido;
+            }
+        }
 
         $this->guardar($notas);
 

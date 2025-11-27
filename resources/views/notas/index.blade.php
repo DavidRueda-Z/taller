@@ -5,94 +5,13 @@
     <title>Gestor de Notas</title>
 
     <style>
-        body {
-            background: #f4f4f4;
-            font-family: Arial;
-            padding: 40px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 650px;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        form label {
-            font-weight: bold;
-            margin-top: 10px;
-            display: block;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            margin-top: 5px;
-        }
-
-        textarea {
-            height: 90px;
-        }
-
-        button {
-            background: #8e44ad;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            margin-top: 15px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background: #6c2e8d;
-        }
-
-        .nota {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            margin-bottom: 10px;
-        }
-
-        .titulo {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .categoria {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .fecha {
-            color: #888;
-            font-size: 0.8rem;
-        }
-
-        a.eliminar {
-            color: red;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        a.eliminar:hover {
-            text-decoration: underline;
-        }
+        body { font-family: Arial; background:#f4f4f4; padding:40px; display:flex; justify-content:center; }
+        .container { width:800px; background:white; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.1); }
+        .nota { border-bottom:1px solid #ccc; padding:10px 0; margin-bottom:10px; }
+        .btn { padding:6px 10px; border-radius:5px; text-decoration:none; color:white; }
+        .editar { background:#f1c40f; }
+        .eliminar { background:#c0392b; }
     </style>
-
 </head>
 <body>
 
@@ -102,45 +21,37 @@
 
     <h1>Gestor de Notas</h1>
 
-    <form method="POST" action="{{ route('notas.store') }}">
+    {{-- FORMULARIO --}}
+    <form action="{{ route('notas.store') }}" method="POST">
         @csrf
 
-        <label>Título</label>
-        <input type="text" name="titulo" required>
+        <input type="text" name="titulo" placeholder="Título" required
+        style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:8px;">
 
-        <label>Contenido</label>
-        <textarea name="contenido" required></textarea>
+        <textarea name="contenido" placeholder="Contenido" required
+        style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; height:80px;"></textarea>
 
-        <label>Categoría</label>
-        <select name="categoria" required>
-            <option value="Personal">Personal</option>
-            <option value="Trabajo">Trabajo</option>
-            <option value="Estudios">Estudios</option>
-            <option value="Ideas">Ideas</option>
-            <option value="Otros">Otros</option>
-        </select>
-
-        <button type="submit">Guardar Nota</button>
+        <button style="padding:10px 15px; background:#8e44ad; color:white; border:none; border-radius:6px; margin-top:10px;">
+            Agregar Nota
+        </button>
     </form>
 
-    <hr>
+    <hr><br>
 
-    @forelse ($notas as $n)
+    {{-- LISTA DE NOTAS --}}
+    @foreach ($notas as $nota)
         <div class="nota">
-            <div class="titulo">{{ $n->titulo }}</div>
-            <div>{{ $n->contenido }}</div>
-            <div class="categoria">Categoría: {{ $n->categoria }}</div>
-            <div class="fecha">Fecha: {{ $n->fecha }}</div>
+            <h3>{{ $nota->titulo }}</h3>
+            <p>{{ $nota->contenido }}</p>
 
-            <a class="eliminar"
-               href="{{ route('notas.destroy', $n->id) }}"
-               onclick="return confirm('¿Eliminar esta nota?')">
-               Eliminar
-            </a>
+            <a href="{{ route('notas.edit', $nota->id) }}" class="btn editar">Editar</a>
+
+            <form action="{{ route('notas.destroy', $nota->id) }}" method="POST" style="display:inline;">
+                @csrf
+                <button class="btn eliminar" onclick="return confirm('¿Eliminar nota?')">Eliminar</button>
+            </form>
         </div>
-    @empty
-        <p style="text-align:center;">No hay notas guardadas</p>
-    @endforelse
+    @endforeach
 
 </div>
 

@@ -3,24 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ReservaController extends Controller
 {
-    private $archivo = 'reservas.json';
-
     private function cargar()
     {
-        if (!Storage::exists($this->archivo)) {
-            Storage::put($this->archivo, json_encode([]));
+        $ruta = storage_path('app/reservas.json');
+
+        if (!file_exists($ruta)) {
+            file_put_contents($ruta, json_encode([]));
         }
 
-        return json_decode(Storage::get($this->archivo));
+        return json_decode(file_get_contents($ruta));
     }
 
-    private function guardar($lista)
+    private function guardar($reservas)
     {
-        Storage::put($this->archivo, json_encode($lista, JSON_PRETTY_PRINT));
+        $ruta = storage_path('app/reservas.json');
+        file_put_contents($ruta, json_encode($reservas, JSON_PRETTY_PRINT));
     }
 
     public function index()
@@ -32,20 +32,20 @@ class ReservaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
-            'servicio' => 'required',
+            'cliente' => 'required|string|max:255',
             'fecha' => 'required|date',
-            'hora' => 'required'
+            'hora' => 'required',
+            'personas' => 'required|numeric|min:1',
         ]);
 
         $reservas = $this->cargar();
 
         $reservas[] = (object)[
             'id' => time(),
-            'nombre' => $request->nombre,
-            'servicio' => $request->servicio,
+            'cliente' => $request->cliente,
             'fecha' => $request->fecha,
-            'hora' => $request->hora
+            'hora' => $request->hora,
+            'personas' => $request->personas,
         ];
 
         $this->guardar($reservas);
@@ -57,12 +57,49 @@ class ReservaController extends Controller
     {
         $reservas = $this->cargar();
 
-        $reservas = array_filter($reservas, function ($r) use ($id) {
-            return $r->id != $id;
-        });
+        $reservas = array_filter($reservas, fn($r) => $r->id != $id);
+        $reservas = array_values($reservas);
+
+        $this->guardar($reservas);
+
+        return redirect()->route('reservas.index');
+    }
+
+    public function edit($id)
+    {
+        $reservas = $this->cargar();
+        $reserva = collect($reservas)->firstWhere('id', $id);
+
+        if (!$reserva) {
+            abort(404, "Reserva no encontrada");
+        }
+
+        return view('reservas.edit', compact('reserva'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'cliente' => 'required|string|max:255',
+            'fecha' => 'required|date',
+            'hora' => 'required',
+            'personas' => 'required|numeric|min:1',
+        ]);
+
+        $reservas = $this->cargar();
+
+        foreach ($reservas as $r) {
+            if ($r->id == $id) {
+                $r->cliente = $request->cliente;
+                $r->fecha = $request->fecha;
+                $r->hora = $request->hora;
+                $r->personas = $request->personas;
+            }
+        }
 
         $this->guardar($reservas);
 
         return redirect()->route('reservas.index');
     }
 }
+

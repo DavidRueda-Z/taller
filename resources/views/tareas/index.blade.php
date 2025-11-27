@@ -14,104 +14,95 @@
         }
 
         .container {
+            width: 600px;
             background: white;
-            width: 500px;
             padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        form {
+        .acciones {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            background: #3498db;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
-        ul {
-            margin-top: 20px;
-            padding: 0;
-            list-style: none;
-        }
-
-        li {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            border: 1px solid #eee;
-        }
-
-        a {
-            color: red;
-            font-weight: bold;
+        .btn {
+            padding: 6px 10px;
+            border-radius: 5px;
             text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
         }
 
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .empty {
-            text-align: center;
-            color: #888;
-            margin-top: 10px;
-        }
+        .btn-editar { background: #f1c40f; }
+        .btn-marcar { background: #27ae60; }
+        .btn-eliminar { background: #c0392b; }
     </style>
 </head>
 <body>
 
-    <div class="container">
+<div class="container">
 
-        @include('partials.volver')
+    @include('partials.volver')
 
+    <h1>Lista de Tareas</h1>
 
-        <h1>Lista de Tareas</h1>
+    {{-- FORM AGREGAR --}}
+    <form method="POST" action="{{ route('tareas.store') }}">
+        @csrf
+        <input type="text" name="texto" placeholder="Nueva tarea..." required
+        style="width:75%; padding:10px; border:1px solid #ccc; border-radius:6px;">
 
-        <form action="{{ route('tareas.store') }}" method="POST">
-            @csrf
-            <input type="text" name="tarea" placeholder="Escribe una tarea..." required>
-            <button type="submit">Agregar</button>
-        </form>
+        <button type="submit"
+        style="padding:10px 15px; background:#8e44ad; color:white; border:none; border-radius:6px;">
+            Agregar
+        </button>
+    </form>
 
-        <ul>
-            @forelse ($tareas as $tarea)
-                <li>
-                    {{ $tarea->texto }}
-                    <a href="{{ route('tareas.destroy', $tarea->id) }}">Eliminar</a>
-                </li>
-            @empty
-                <p class="empty">No hay tareas registradas</p>
-            @endforelse
-        </ul>
+    <hr><br>
 
-    </div>
+    {{-- LISTADO --}}
+    <ul style="list-style:none; padding:0;">
+        @foreach ($tareas as $t)
+
+            @php
+                $hecha = property_exists($t, 'hecha') ? $t->hecha : false;
+            @endphp
+
+            <li style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:8px 5px;">
+
+                <span style="{{ $hecha ? 'text-decoration: line-through; color:gray;' : '' }}">
+                    • {{ $t->texto }}
+                </span>
+
+                <div class="acciones">
+
+                    @if (!$hecha)
+                        <a href="{{ route('tareas.edit', $t->id) }}" class="btn btn-editar">Editar</a>
+
+                        <form action="{{ route('tareas.marcar', $t->id) }}" method="POST">
+                            @csrf
+                            <button class="btn btn-marcar">Marcar</button>
+                        </form>
+
+                    @else
+                        <form action="{{ route('tareas.destroy', $t->id) }}" method="POST">
+                            @csrf
+                            <button class="btn btn-eliminar"
+                            onclick="return confirm('¿Eliminar tarea completada?')">
+                                Eliminar
+                            </button>
+                        </form>
+                    @endif
+
+                </div>
+
+            </li>
+
+        @endforeach
+    </ul>
+
+</div>
 
 </body>
 </html>
