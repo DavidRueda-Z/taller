@@ -8,6 +8,10 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\RecetaController;
+use App\Http\Controllers\MemoriaController;
+use App\Http\Controllers\EncuestaController;
+use App\Http\Controllers\CronometroController;
 
 Route::get('/', function () {
     return view('home');
@@ -46,3 +50,21 @@ Route::get('/calendario', [EventoController::class, 'index'])->name('eventos.ind
 Route::post('/calendario', [EventoController::class, 'store'])->name('eventos.store');
 Route::get('/calendario/eliminar/{id}', [EventoController::class, 'destroy'])->name('eventos.destroy');
 
+//Ejercicios Recetas
+Route::get('/recetas', [RecetaController::class, 'index'])->name('recetas.index');
+Route::post('/recetas', [RecetaController::class, 'store'])->name('recetas.store');
+Route::get('/recetas/eliminar/{id}', [RecetaController::class, 'destroy'])->name('recetas.destroy');
+Route::get('/recetas/editar/{id}', [RecetaController::class, 'edit'])->name('recetas.edit');
+Route::post('/recetas/actualizar/{id}', [RecetaController::class, 'update'])->name('recetas.update');
+
+
+//Ejercicios Memoria
+Route::get('/memoria', [MemoriaController::class, 'index'])->name('memoria.index');
+
+//Ejercicios Encuestas
+Route::get('/encuestas', [EncuestaController::class, 'index'])->name('encuestas.index');
+Route::post('/encuestas', [EncuestaController::class, 'store'])->name('encuestas.store');
+Route::get('/encuestas/eliminar/{id}', [EncuestaController::class, 'destroy'])->name('encuestas.destroy');
+
+//Ejercicios Cronometro
+Route::get('/cronometro', [CronometroController::class, 'index'])->name('cronometro.index');

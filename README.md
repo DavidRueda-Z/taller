@@ -1,4 +1,4 @@
-# Ejercicios PHP 
+# Ejercicios PHP + Laravel
 
 ### Contenido:
 1. Lista de tareas
